@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC: Lead · Votes · Learning</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Preconnect for faster font loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ════════════════════ HEADER ════════════════════ -->
+  <header id="header">
+    <div id="header-brand">
+      <span class="title">NYC: Lead · Votes · Learning</span>
+      <span class="subtitle">Community District Explorer</span>
+    </div>
+
+    <nav id="layer-controls" aria-label="Map layers">
+      <button class="layer-btn" data-layer="voterTurnout" title="Show voter turnout rate per district">
+        🗳️ <span class="btn-label">Voter Turnout</span>
+      </button>
+      <button class="layer-btn" data-layer="proHealthVotes" title="% votes for pro-health / anti-lead candidates">
+        🌿 <span class="btn-label">Pro-Health Votes</span>
+      </button>
+      <button class="layer-btn active" data-layer="leadLevel" title="Lead contamination level in water (ppb)">
+        ☠️ <span class="btn-label">Lead Contamination</span>
+      </button>
+      <button class="layer-btn" data-layer="schoolScore" title="Composite school performance index">
+        📚 <span class="btn-label">School Performance</span>
+      </button>
+    </nav>
+
+    <div id="header-actions">
+      <button class="icon-btn" id="about-btn" title="About this project">ℹ</button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ MAIN APP ═══════════════════ -->
+  <div id="app">
+
+    <!-- MAP -->
+    <div id="map-container">
+      <div id="map" aria-label="Interactive NYC community district map"></div>
+
+      <!-- LEGEND -->
+      <div id="legend">
+        <div id="legend-title"></div>
+        <div class="legend-scale" id="legend-scale"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" aria-label="District details">
+
+      <!-- WELCOME STATE -->
+      <div id="welcome-panel">
+        <div class="welcome-icon">🗺️</div>
+        <div class="welcome-title">Select a District</div>
+        <div class="welcome-desc">
+          Click any colored area on the map to explore detailed data for that
+          NYC Community District — including lead levels, voter turnout,
+          pro-health voting patterns, and school performance.
+        </div>
+        <div class="hint-chips">
+          <span class="hint-chip">☠️ Bronx has highest lead</span>
+          <span class="hint-chip">📚 Lead ↔ School scores</span>
+          <span class="hint-chip">🗳️ Low turnout in hot zones</span>
+        </div>
+
+        <!-- Always-visible correlation scatter -->
+        <div style="width:100%; margin-top: 24px;">
+          <div class="section-label" style="margin-top:0">📊 City-Wide: Lead vs. Schools</div>
+          <div id="scatter-container-welcome" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:0">
+            <div class="chart-title">Lead Contamination (ppb) vs. School Score</div>
+            <canvas id="scatterChartWelcome" height="180"></canvas>
+            <div id="scatter-corr-welcome" style="margin-top:8px; text-align:center; font-size:0.72rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETAIL STATE (hidden until district clicked) -->
+      <div id="detail-panel" style="display:none">
+        <div id="sidebar-header">
+          <div id="district-name">—</div>
+          <div id="district-meta">—</div>
+        </div>
+
+        <div id="sidebar-body">
+
+          <!-- 4 Metric Cards -->
+          <div class="section-label">📈 District Metrics</div>
+          <div class="metrics-grid" id="metrics-grid"></div>
+
+          <!-- Narrative Insight -->
+          <div class="section-label">💬 Data Insight</div>
+          <div id="narrative-box" class="narrative-box"></div>
+
+          <!-- Radar Chart -->
+          <div class="section-label">🕸️ Performance Profile</div>
+          <div id="radar-container">
+            <div class="chart-title">Normalized scores (higher = better for all axes)</div>
+            <canvas id="radarChart" height="220"></canvas>
+          </div>
+
+          <!-- Scatter Plot -->
+          <div class="section-label">📊 City-Wide: Lead vs. Schools</div>
+          <div id="scatter-container">
+            <div class="chart-title">Lead Contamination (ppb) vs. School Score — selected district in <span style="color:#ff5252">red</span></div>
+            <canvas id="scatterChart" height="200"></canvas>
+            <div id="scatter-corr" style="margin-top:8px; text-align:center; font-size:0.72rem;"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- Mobile sidebar toggle -->
+  <button id="sidebar-toggle" aria-label="Toggle sidebar">📋</button>
+
+  <!-- ══════════════════ ABOUT MODAL ═══════════════════ -->
+  <div id="about-overlay" role="dialog" aria-modal="true" aria-label="About this project">
+    <div id="about-modal">
+      <div class="about-header">
+        <div class="about-title">About This Project</div>
+        <button class="close-btn" id="about-close" aria-label="Close">×</button>
+      </div>
+
+      <div class="about-section">
+        <div class="warning-badge">⚠️ Illustrative Data</div>
+        <p>All metrics displayed are <strong>simulated data</strong> created for educational and visualization purposes. They are designed to reflect plausible real-world patterns documented in public-health literature, but they are <em>not</em> sourced from official measurements. Do not use this data for policy or legal decisions.</p>
+      </div>
+
+      <div class="about-section">
+        <h4>What This Map Shows</h4>
+        <ul>
+          <li><strong>Voter Turnout</strong> — % of registered voters participating in local elections</li>
+          <li><strong>Pro-Health Votes</strong> — share of votes for candidates who championed clean water, lead abatement, and public-health investment</li>
+          <li><strong>Lead Contamination</strong> — estimated average lead in tap water (ppb). EPA action level is 15 ppb</li>
+          <li><strong>School Performance</strong> — composite index of test scores and graduation rates (0–100)</li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h4>The Story in the Data</h4>
+        <p>Public-health research consistently finds that <strong>lead exposure</strong> — even at low levels — impairs cognitive development in children, depresses educational attainment, and can suppress long-term civic participation. Communities with aging infrastructure (older pipes, buildings built before 1978) face disproportionate exposure.</p>
+        <p style="margin-top:8px">The scatter plot in this tool shows a strong <strong>negative correlation</strong> between lead levels and school scores across NYC community districts — a pattern supported by peer-reviewed epidemiological studies.</p>
+      </div>
+
+      <div class="about-section">
+        <h4>Real Data Sources to Explore</h4>
+        <ul>
+          <li>NYC DOHMH Lead Poisoning Prevention Program</li>
+          <li>NYC Open Data — Board of Elections turnout files</li>
+          <li>NYC Department of Education — School Quality Reports</li>
+          <li>EPA Safe Drinking Water Information System</li>
+          <li>NYC Community Health Profiles</li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h4>How to Use</h4>
+        <p>Toggle between the four data layers using the buttons in the header. Click any district on the map to see its full profile, a radar chart comparing across all dimensions, and its position in the city-wide lead-vs-schools scatter plot.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ SCRIPTS ════════════════════ -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/geodata.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
