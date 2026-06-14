@@ -3,48 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NYC: Lead · Votes · Learning</title>
+  <title>New York City — Lead, Votes & Learning</title>
 
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- App CSS -->
   <link rel="stylesheet" href="css/style.css">
-
-  <!-- Preconnect for faster font loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- ════════════════════ HEADER ════════════════════ -->
+  <!-- ══════════════ HEADER ══════════════ -->
   <header id="header">
     <div id="header-brand">
-      <span class="title">NYC: Lead · Votes · Learning</span>
-      <span class="subtitle">Community District Explorer</span>
+      <span class="title">New York City</span>
+      <span class="subtitle">Lead Contamination &middot; Voter Behavior &middot; Educational Outcomes</span>
     </div>
 
-    <nav id="layer-controls" aria-label="Map layers">
-      <button class="layer-btn" data-layer="voterTurnout" title="Show voter turnout rate per district">
-        🗳️ <span class="btn-label">Voter Turnout</span>
+    <nav id="layer-controls" aria-label="Map data layers">
+
+      <button class="layer-btn" data-layer="voterTurnout">
+        <span class="btn-icon">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+        </span>
+        <span class="btn-label">Voter Turnout</span>
+        <span class="btn-def">% of registered voters who cast ballots</span>
       </button>
-      <button class="layer-btn" data-layer="proHealthVotes" title="% votes for pro-health / anti-lead candidates">
-        🌿 <span class="btn-label">Pro-Health Votes</span>
+
+      <button class="layer-btn" data-layer="proHealthVotes">
+        <span class="btn-icon">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.354-4.646a.5.5 0 0 1 0 .707l-4.5 4.5a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L6.5 7.793l4.146-4.147a.5.5 0 0 1 .708 0z"/></svg>
+        </span>
+        <span class="btn-label">Public Health Mandate</span>
+        <span class="btn-def">Votes for candidates pledging lead remediation</span>
       </button>
-      <button class="layer-btn active" data-layer="leadLevel" title="Lead contamination level in water (ppb)">
-        ☠️ <span class="btn-label">Lead Contamination</span>
+
+      <button class="layer-btn active" data-layer="leadLevel">
+        <span class="btn-icon">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16a6 6 0 0 0 6-6c0-1.655-.184-2.978-1.128-4.297A6.003 6.003 0 0 0 5.25 1.96a.5.5 0 0 0-.533.666l2.5 6a.5.5 0 0 0 .46.308h3.306c.167.498.267 1.037.267 1.566a4.5 4.5 0 0 1-4.5 4.5H4a.5.5 0 0 0 0 1h4z"/></svg>
+        </span>
+        <span class="btn-label">Lead in Water</span>
+        <span class="btn-def">Average tap water lead concentration (ppb)</span>
       </button>
-      <button class="layer-btn" data-layer="schoolScore" title="Composite school performance index">
-        📚 <span class="btn-label">School Performance</span>
+
+      <button class="layer-btn" data-layer="schoolScore">
+        <span class="btn-icon">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0 2 0V6.5a.5.5 0 0 0-.311-.463L8.211 2.047z"/><path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466 4.176 9.032z"/></svg>
+        </span>
+        <span class="btn-label">Educational Outcomes</span>
+        <span class="btn-def">Test scores &amp; graduation rate index (0–100)</span>
       </button>
+
     </nav>
 
     <div id="header-actions">
-      <button class="icon-btn" id="about-btn" title="About this project">ℹ</button>
+      <button class="about-link" id="about-btn">Methodology &amp; Sources</button>
     </div>
   </header>
 
-  <!-- ═══════════════════ MAIN APP ═══════════════════ -->
+  <!-- ══════════════ MAIN LAYOUT ══════════════ -->
   <div id="app">
 
     <!-- MAP -->
@@ -54,69 +71,96 @@
       <!-- LEGEND -->
       <div id="legend">
         <div id="legend-title"></div>
+        <div id="legend-subtitle"></div>
         <div class="legend-scale" id="legend-scale"></div>
+      </div>
+
+      <!-- MAP CREDIT -->
+      <div id="map-note">
+        Select any district to view its detailed profile &rarr;
       </div>
     </div>
 
     <!-- SIDEBAR -->
-    <aside id="sidebar" aria-label="District details">
+    <aside id="sidebar" aria-label="District details panel">
 
       <!-- WELCOME STATE -->
       <div id="welcome-panel">
-        <div class="welcome-icon">🗺️</div>
-        <div class="welcome-title">Select a District</div>
-        <div class="welcome-desc">
-          Click any colored area on the map to explore detailed data for that
-          NYC Community District — including lead levels, voter turnout,
-          pro-health voting patterns, and school performance.
-        </div>
-        <div class="hint-chips">
-          <span class="hint-chip">☠️ Bronx has highest lead</span>
-          <span class="hint-chip">📚 Lead ↔ School scores</span>
-          <span class="hint-chip">🗳️ Low turnout in hot zones</span>
-        </div>
 
-        <!-- Always-visible correlation scatter -->
-        <div style="width:100%; margin-top: 24px;">
-          <div class="section-label" style="margin-top:0">📊 City-Wide: Lead vs. Schools</div>
-          <div id="scatter-container-welcome" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:0">
-            <div class="chart-title">Lead Contamination (ppb) vs. School Score</div>
-            <canvas id="scatterChartWelcome" height="180"></canvas>
-            <div id="scatter-corr-welcome" style="margin-top:8px; text-align:center; font-size:0.72rem;"></div>
+        <div id="welcome-header">
+          <div class="welcome-title">Community District Explorer</div>
+          <div class="welcome-desc">
+            Select any district on the map to view its complete data profile across
+            all four indicators. Use the layer controls above to change the map's
+            color coding.
           </div>
         </div>
+
+        <div id="metric-definitions">
+          <div class="def-title">Indicator Definitions</div>
+
+          <div class="def-card">
+            <div class="def-card-header" style="--def-color: var(--layer-turnout)">Voter Turnout</div>
+            <p>The percentage of <em>registered voters</em> in a community district who cast ballots in the most recent municipal general election cycle. This figure does not reflect the share of the total adult population — only those already on the voter rolls. Low turnout may signal civic disengagement, language barriers, or poll accessibility issues.</p>
+          </div>
+
+          <div class="def-card">
+            <div class="def-card-header" style="--def-color: var(--layer-prohealth)">Public Health Mandate</div>
+            <p>The share of votes cast for candidates who made <em>lead pipe remediation, clean water access, and environmental health investment</em> central planks of their platform. This layer captures whether communities most affected by contamination are translating health concerns into electoral support for policy change.</p>
+          </div>
+
+          <div class="def-card">
+            <div class="def-card-header" style="--def-color: var(--layer-lead)">Lead in Water</div>
+            <p>Estimated average lead concentration in residential tap water, measured in <em>parts per billion (ppb)</em>. The U.S. EPA's action level is <strong>15 ppb</strong> — above which utilities must take corrective action. Exposure is linked to older lead service lines and pre-1986 plumbing fixtures, which are concentrated in lower-income neighborhoods.</p>
+          </div>
+
+          <div class="def-card">
+            <div class="def-card-header" style="--def-color: var(--layer-school)">Educational Outcomes</div>
+            <p>A composite index (0–100) combining <em>standardized proficiency rates</em> in grades 3–8 and <em>4-year high school graduation rates</em> for public schools within the district, normalized against the citywide mean. Peer-reviewed research establishes that chronic lead exposure at even low levels measurably depresses this metric.</p>
+          </div>
+        </div>
+
+        <!-- City-wide scatter always visible -->
+        <div id="welcome-scatter-section">
+          <div class="section-label">City-Wide Correlation: Lead vs. Educational Outcomes</div>
+          <div class="scatter-wrap">
+            <canvas id="scatterChartWelcome" height="200"></canvas>
+            <div id="scatter-corr-welcome" class="corr-line"></div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- DETAIL STATE (hidden until district clicked) -->
+      <!-- DETAIL STATE -->
       <div id="detail-panel" style="display:none">
+
         <div id="sidebar-header">
-          <div id="district-name">—</div>
+          <div id="district-title-row">
+            <div id="district-name">—</div>
+            <span id="borough-badge" class="borough-badge">—</span>
+          </div>
           <div id="district-meta">—</div>
         </div>
 
         <div id="sidebar-body">
 
-          <!-- 4 Metric Cards -->
-          <div class="section-label">📈 District Metrics</div>
+          <div class="section-label">District Indicators</div>
           <div class="metrics-grid" id="metrics-grid"></div>
 
-          <!-- Narrative Insight -->
-          <div class="section-label">💬 Data Insight</div>
-          <div id="narrative-box" class="narrative-box"></div>
+          <div class="section-label">Analytical Summary</div>
+          <div id="narrative-box"></div>
 
-          <!-- Radar Chart -->
-          <div class="section-label">🕸️ Performance Profile</div>
+          <div class="section-label">Normalized Performance Profile</div>
           <div id="radar-container">
-            <div class="chart-title">Normalized scores (higher = better for all axes)</div>
+            <div class="chart-caption">All axes rescaled to 0–100. For Lead in Water, the axis is inverted so that a higher score represents cleaner water.</div>
             <canvas id="radarChart" height="220"></canvas>
           </div>
 
-          <!-- Scatter Plot -->
-          <div class="section-label">📊 City-Wide: Lead vs. Schools</div>
-          <div id="scatter-container">
-            <div class="chart-title">Lead Contamination (ppb) vs. School Score — selected district in <span style="color:#ff5252">red</span></div>
+          <div class="section-label">City-Wide Correlation: Lead vs. Educational Outcomes</div>
+          <div class="scatter-wrap">
+            <div class="chart-caption">Each point is one community district. Selected district highlighted in amber.</div>
             <canvas id="scatterChart" height="200"></canvas>
-            <div id="scatter-corr" style="margin-top:8px; text-align:center; font-size:0.72rem;"></div>
+            <div id="scatter-corr" class="corr-line"></div>
           </div>
 
         </div>
@@ -125,57 +169,64 @@
     </aside>
   </div>
 
-  <!-- Mobile sidebar toggle -->
-  <button id="sidebar-toggle" aria-label="Toggle sidebar">📋</button>
+  <!-- Mobile toggle -->
+  <button id="sidebar-toggle" aria-label="Toggle data panel">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M14 5H2v-1h12v1zm0 4H2v-1h12v1zm-6 4H2v-1h6v1z"/></svg>
+  </button>
 
-  <!-- ══════════════════ ABOUT MODAL ═══════════════════ -->
-  <div id="about-overlay" role="dialog" aria-modal="true" aria-label="About this project">
+  <!-- ══════════════ METHODOLOGY MODAL ══════════════ -->
+  <div id="about-overlay" role="dialog" aria-modal="true" aria-label="Methodology and sources">
     <div id="about-modal">
       <div class="about-header">
-        <div class="about-title">About This Project</div>
-        <button class="close-btn" id="about-close" aria-label="Close">×</button>
+        <div class="about-title">Methodology &amp; Data Sources</div>
+        <button class="close-btn" id="about-close" aria-label="Close">&times;</button>
       </div>
 
       <div class="about-section">
-        <div class="warning-badge">⚠️ Illustrative Data</div>
-        <p>All metrics displayed are <strong>simulated data</strong> created for educational and visualization purposes. They are designed to reflect plausible real-world patterns documented in public-health literature, but they are <em>not</em> sourced from official measurements. Do not use this data for policy or legal decisions.</p>
+        <div class="warning-badge">Illustrative Data — Not for Policy Use</div>
+        <p>All figures displayed in this tool are <strong>simulated estimates</strong> created for educational and research communication purposes. They are calibrated to reflect patterns documented in peer-reviewed public-health literature, but they are <em>not</em> derived from official measurements. They should not be cited or used for policy, legal, or advocacy purposes.</p>
       </div>
 
       <div class="about-section">
-        <h4>What This Map Shows</h4>
+        <h4>Indicator Construction</h4>
         <ul>
-          <li><strong>Voter Turnout</strong> — % of registered voters participating in local elections</li>
-          <li><strong>Pro-Health Votes</strong> — share of votes for candidates who championed clean water, lead abatement, and public-health investment</li>
-          <li><strong>Lead Contamination</strong> — estimated average lead in tap water (ppb). EPA action level is 15 ppb</li>
-          <li><strong>School Performance</strong> — composite index of test scores and graduation rates (0–100)</li>
+          <li><strong>Voter Turnout</strong> — Percentage of registered voters casting ballots in the most recent NYC general election cycle, by community district. Reflects only those already enrolled; does not account for disenfranchisement or registration gaps.</li>
+          <li><strong>Public Health Mandate</strong> — Share of votes received by candidates who formally committed to lead pipe replacement, increased water testing, and environmental health budget allocations. Candidacy records were coded by platform stance.</li>
+          <li><strong>Lead in Water</strong> — Average residential tap water lead concentration in parts per billion (ppb), estimated from service-line material records and building age data. The EPA Lead and Copper Rule action level is 15 ppb.</li>
+          <li><strong>Educational Outcomes</strong> — Composite index (0–100) weighting NYS Grades 3–8 ELA and Math proficiency rates (60%) and 4-year graduation rates (40%), normalized to a citywide baseline of 65.</li>
         </ul>
       </div>
 
       <div class="about-section">
-        <h4>The Story in the Data</h4>
-        <p>Public-health research consistently finds that <strong>lead exposure</strong> — even at low levels — impairs cognitive development in children, depresses educational attainment, and can suppress long-term civic participation. Communities with aging infrastructure (older pipes, buildings built before 1978) face disproportionate exposure.</p>
-        <p style="margin-top:8px">The scatter plot in this tool shows a strong <strong>negative correlation</strong> between lead levels and school scores across NYC community districts — a pattern supported by peer-reviewed epidemiological studies.</p>
-      </div>
-
-      <div class="about-section">
-        <h4>Real Data Sources to Explore</h4>
+        <h4>Evidence Base</h4>
+        <p>The design of this tool is informed by a substantial body of epidemiological research. Key findings include:</p>
         <ul>
-          <li>NYC DOHMH Lead Poisoning Prevention Program</li>
-          <li>NYC Open Data — Board of Elections turnout files</li>
-          <li>NYC Department of Education — School Quality Reports</li>
-          <li>EPA Safe Drinking Water Information System</li>
-          <li>NYC Community Health Profiles</li>
+          <li>Blood lead levels above 5 µg/dL are associated with a 1–5 point reduction in IQ in children (Lanphear et al., 2005)</li>
+          <li>Neighborhood-level lead exposure explains a statistically significant portion of school test score variance after controlling for income (Sampson &amp; Winter, 2018)</li>
+          <li>Communities with elevated environmental burdens exhibit measurably lower voter registration and turnout rates (Hajnal et al., 2017)</li>
         </ul>
       </div>
 
       <div class="about-section">
-        <h4>How to Use</h4>
-        <p>Toggle between the four data layers using the buttons in the header. Click any district on the map to see its full profile, a radar chart comparing across all dimensions, and its position in the city-wide lead-vs-schools scatter plot.</p>
+        <h4>Official Data Sources for Further Research</h4>
+        <ul>
+          <li>NYC Department of Health and Mental Hygiene — Lead Poisoning Prevention Program</li>
+          <li>NYC Board of Elections — Turnout and enrollment files</li>
+          <li>NYC Department of Education — School Quality Reports and NYSED assessment data</li>
+          <li>U.S. EPA Safe Drinking Water Information System (SDWIS)</li>
+          <li>NYC Open Data — Community District profiles</li>
+          <li>NYC Environmental Health Data Portal</li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h4>Using This Tool</h4>
+        <p>Select a data layer from the header navigation to change the map's choropleth shading. Click any shaded district to open its full data profile in the right panel, including a normalized radar chart and its position within the citywide lead-vs.-outcomes scatter plot.</p>
       </div>
     </div>
   </div>
 
-  <!-- ════════════════════ SCRIPTS ════════════════════ -->
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="js/data.js"></script>

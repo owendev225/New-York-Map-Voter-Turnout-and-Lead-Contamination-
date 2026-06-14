@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════
-   NYC Lead · Votes · Learning  —  Main App
+   NYC Lead · Votes · Learning  —  Main Application
    ══════════════════════════════════════════════════ */
 
 // ── State ────────────────────────────────────────────
@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initControls();
   initAboutModal();
   renderWelcomeScatter();
-  renderScatterPlot(null);
 });
 
 // ── Map ──────────────────────────────────────────────
@@ -29,7 +28,6 @@ function initMap() {
     preferCanvas: false,
   });
 
-  // Dark tile layer
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
@@ -51,16 +49,14 @@ function districtStyle(feature) {
   const isSelected = selectedDistrict && selectedDistrict.id === d.id;
   return {
     fillColor: color,
-    fillOpacity: isSelected ? 0.90 : 0.70,
-    color: isSelected ? '#ffffff' : 'rgba(255,255,255,0.15)',
-    weight: isSelected ? 2.5 : 0.8,
+    fillOpacity: isSelected ? 0.88 : 0.68,
+    color: isSelected ? '#e8ecf4' : 'rgba(255,255,255,0.12)',
+    weight: isSelected ? 2 : 0.7,
   };
 }
 
 function renderGeoLayer() {
-  if (geoLayer) {
-    map.removeLayer(geoLayer);
-  }
+  if (geoLayer) map.removeLayer(geoLayer);
 
   geoLayer = L.geoJSON(NYC_GEODATA, {
     style: districtStyle,
@@ -70,14 +66,13 @@ function renderGeoLayer() {
 
       layer.bindTooltip(() => {
         const m = METRICS[activeLayer];
-        return `<strong>${d.name}</strong><br>${d.neighborhood}<br>
-          ${m.icon} ${m.label}: <strong>${m.format(d[activeLayer])}</strong>`;
-      }, { className: 'map-tooltip', sticky: true });
+        return `<strong>${d.name}</strong><br><span style="color:#9aa3bc">${d.neighborhood}</span><br>${m.label}: <strong>${m.format(d[activeLayer])}</strong>`;
+      }, { sticky: true });
 
-      layer.on('click', () => selectDistrict(d, layer));
+      layer.on('click', () => selectDistrict(d));
       layer.on('mouseover', function () {
         if (!selectedDistrict || selectedDistrict.id !== d.id) {
-          this.setStyle({ fillOpacity: 0.85, weight: 1.5, color: 'rgba(255,255,255,0.4)' });
+          this.setStyle({ fillOpacity: 0.82, weight: 1.2, color: 'rgba(255,255,255,0.35)' });
         }
       });
       layer.on('mouseout', function () {
@@ -90,40 +85,36 @@ function renderGeoLayer() {
 }
 
 // ── District Selection ───────────────────────────────
-function selectDistrict(d, clickedLayer) {
+function selectDistrict(d) {
   selectedDistrict = d;
 
-  // Reset all styles then highlight selected
   geoLayer.eachLayer(layer => {
     geoLayer.resetStyle(layer);
-    const lid = layer.feature.properties.districtId;
-    if (lid === d.id) {
-      layer.setStyle({
-        fillOpacity: 0.90,
-        color: '#ffffff',
-        weight: 2.5,
-      });
+    if (layer.feature.properties.districtId === d.id) {
+      layer.setStyle({ fillOpacity: 0.88, color: '#e8ecf4', weight: 2 });
       layer.bringToFront();
     }
   });
 
   showDistrictPanel(d);
+
+  // Hide the map hint once a district is clicked
+  const note = document.getElementById('map-note');
+  if (note) note.classList.add('hidden');
 }
 
 // ── Sidebar Panel ────────────────────────────────────
 function showDistrictPanel(d) {
-  const sidebar = document.getElementById('sidebar');
-  const welcome = document.getElementById('welcome-panel');
+  document.getElementById('welcome-panel').style.display = 'none';
   const detail = document.getElementById('detail-panel');
+  detail.style.display = 'flex';
+  detail.style.flexDirection = 'column';
 
-  welcome.style.display = 'none';
-  detail.style.display = 'block';
-
-  // Borough badge class
   const boroughClass = 'borough-' + d.borough.replace(' ', '');
-
-  document.getElementById('district-name').innerHTML =
-    `${d.name}<span class="borough-badge ${boroughClass}">${d.borough}</span>`;
+  document.getElementById('district-name').textContent = d.name;
+  const badge = document.getElementById('borough-badge');
+  badge.textContent = d.borough;
+  badge.className = `borough-badge ${boroughClass}`;
   document.getElementById('district-meta').textContent = d.neighborhood;
 
   renderMetricCards(d);
@@ -131,8 +122,7 @@ function showDistrictPanel(d) {
   renderRadarChart(d);
   renderScatterPlot(d);
 
-  // Mobile: open sidebar
-  sidebar.classList.add('open');
+  document.getElementById('sidebar').classList.add('open');
 }
 
 function renderMetricCards(d) {
@@ -140,32 +130,31 @@ function renderMetricCards(d) {
   container.innerHTML = '';
 
   const metricList = [
-    { key: 'voterTurnout',   color: 'var(--layer-turnout)',   pct: d.voterTurnout,           max: 1 },
-    { key: 'proHealthVotes', color: 'var(--layer-prohealth)', pct: d.proHealthVotes,          max: 1 },
-    { key: 'leadLevel',      color: 'var(--layer-lead)',       pct: d.leadLevel / 25,         max: 25 },
-    { key: 'schoolScore',    color: 'var(--layer-school)',     pct: d.schoolScore / 100,      max: 100 },
+    { key: 'voterTurnout',   color: 'var(--layer-turnout)',   pct: d.voterTurnout },
+    { key: 'proHealthVotes', color: 'var(--layer-prohealth)', pct: d.proHealthVotes },
+    { key: 'leadLevel',      color: 'var(--layer-lead)',       pct: d.leadLevel / 25 },
+    { key: 'schoolScore',    color: 'var(--layer-school)',     pct: d.schoolScore / 100 },
   ];
 
   for (const { key, color, pct } of metricList) {
     const m = METRICS[key];
+    const val = d[key];
     const card = document.createElement('div');
     card.className = 'metric-card';
     card.style.setProperty('--metric-color', color);
 
-    const val = d[key];
-    let ratingText = '';
+    let rating = '';
     if (key === 'leadLevel') {
-      ratingText = val > 18 ? '⚠️ Critical' : val > 12 ? '⚠️ Elevated' : val > 7 ? '↗ Moderate' : '✓ Low';
+      rating = val > 18 ? 'Critical' : val > 12 ? 'Elevated' : val > 7 ? 'Moderate' : 'Low';
     } else {
-      const pctVal = typeof val === 'number' && val <= 1 ? val : val / 100;
-      ratingText = pctVal > 0.7 ? '↑ High' : pctVal > 0.5 ? '→ Moderate' : '↓ Low';
+      const p = val <= 1 ? val : val / 100;
+      rating = p > 0.7 ? 'High' : p > 0.5 ? 'Moderate' : 'Low';
     }
 
     card.innerHTML = `
-      <span class="metric-icon">${m.icon}</span>
       <div class="metric-label">${m.label}</div>
       <div class="metric-value">${m.format(val)}</div>
-      <div class="metric-sub">${ratingText}</div>
+      <div class="metric-rating">${rating}</div>
       <div class="metric-bar"><div class="metric-bar-fill" style="width:${Math.min(pct * 100, 100)}%"></div></div>
     `;
     container.appendChild(card);
@@ -175,42 +164,39 @@ function renderMetricCards(d) {
 function renderNarrative(d) {
   const box = document.getElementById('narrative-box');
   box.textContent = generateNarrative(d);
-  box.className = 'narrative-box';
-  if (d.leadLevel > 15) box.className += ' lead-high';
-  else if (d.leadLevel > 8) box.className += ' lead-mid';
-  else box.className += ' lead-low';
+  // Accent color on left border based on lead level
+  const color = d.leadLevel > 15
+    ? 'var(--layer-lead)'
+    : d.leadLevel > 8
+      ? 'var(--amber)'
+      : 'var(--layer-prohealth)';
+  box.style.setProperty('--narrative-color', color);
 }
 
 // ── Radar Chart ──────────────────────────────────────
 function renderRadarChart(d) {
   if (radarChart) { radarChart.destroy(); radarChart = null; }
 
-  // Normalize each metric to 0-100 for radar
-  const normalize = {
-    voterTurnout:   d.voterTurnout * 100,
-    proHealthVotes: d.proHealthVotes * 100,
-    leadLevel:      Math.max(0, 100 - ((d.leadLevel / 25) * 100)), // inverted: low lead = high score
-    schoolScore:    d.schoolScore,
-  };
+  const data = [
+    d.voterTurnout * 100,
+    d.proHealthVotes * 100,
+    Math.max(0, 100 - (d.leadLevel / 25) * 100),
+    d.schoolScore,
+  ];
 
   const ctx = document.getElementById('radarChart').getContext('2d');
   radarChart = new Chart(ctx, {
     type: 'radar',
     data: {
-      labels: ['Voter\nTurnout', 'Pro-Health\nVotes', 'Clean\nWater', 'School\nScore'],
+      labels: ['Voter Turnout', 'Health Mandate', 'Water Quality', 'Educational Outcomes'],
       datasets: [{
         label: d.name,
-        data: [
-          normalize.voterTurnout,
-          normalize.proHealthVotes,
-          normalize.leadLevel,
-          normalize.schoolScore,
-        ],
-        backgroundColor: 'rgba(79, 195, 247, 0.15)',
-        borderColor: '#4fc3f7',
-        pointBackgroundColor: '#4fc3f7',
-        pointRadius: 4,
-        borderWidth: 2,
+        data,
+        backgroundColor: 'rgba(91, 200, 245, 0.12)',
+        borderColor: '#5bc8f5',
+        pointBackgroundColor: '#5bc8f5',
+        pointRadius: 3,
+        borderWidth: 1.5,
       }]
     },
     options: {
@@ -218,92 +204,83 @@ function renderRadarChart(d) {
       maintainAspectRatio: true,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.raw.toFixed(1)} / 100`
-          }
-        }
+        tooltip: { callbacks: { label: ctx => `${ctx.raw.toFixed(1)} / 100` } }
       },
       scales: {
         r: {
           min: 0, max: 100,
-          ticks: {
-            display: false,
-            stepSize: 25,
-          },
+          ticks: { display: false },
           pointLabels: {
-            color: '#8890aa',
-            font: { size: 10 },
+            color: '#606880',
+            font: { size: 9, family: 'Inter, system-ui' },
           },
-          grid: { color: '#2c3150' },
-          angleLines: { color: '#2c3150' },
+          grid: { color: '#1c1f30' },
+          angleLines: { color: '#1c1f30' },
         }
       }
     }
   });
 }
 
-// ── Welcome Scatter (no selected district) ────────────
+// ── Welcome Scatter ───────────────────────────────────
 function renderWelcomeScatter() {
   if (scatterChartWelcome) { scatterChartWelcome.destroy(); scatterChartWelcome = null; }
-  const ctx = document.getElementById('scatterChartWelcome');
-  if (!ctx) return;
-  scatterChartWelcome = buildScatterChart(ctx, null);
-  const corr = pearsonCorrelation(DISTRICTS.map(d => d.leadLevel), DISTRICTS.map(d => d.schoolScore));
-  const el = document.getElementById('scatter-corr-welcome');
-  if (el) el.innerHTML = `<span class="corr-badge corr-neg">r = ${corr.toFixed(2)} — Strong negative correlation</span>`;
-}
-
-// ── Scatter Plot ─────────────────────────────────────
-function renderScatterPlot(selectedD) {
-  if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
-
-  const ctx = document.getElementById('scatterChart');
-  if (!ctx) return;
-  scatterChart = buildScatterChart(ctx, selectedD);
-
-  // Correlation label
+  const canvas = document.getElementById('scatterChartWelcome');
+  if (!canvas) return;
+  scatterChartWelcome = buildScatterChart(canvas, null);
   const corr = pearsonCorrelation(
     DISTRICTS.map(d => d.leadLevel),
     DISTRICTS.map(d => d.schoolScore)
   );
-  const corrEl = document.getElementById('scatter-corr');
-  if (corrEl) corrEl.innerHTML = `<span class="corr-badge ${corr < 0 ? 'corr-neg' : 'corr-pos'}">
-    r = ${corr.toFixed(2)} &nbsp; ${corr < -0.5 ? '— Strong negative correlation' : corr < 0 ? '— Weak negative' : '— Positive'}
-  </span>`;
+  const el = document.getElementById('scatter-corr-welcome');
+  if (el) el.innerHTML = `<span class="corr-badge corr-neg">Pearson r = ${corr.toFixed(2)} &mdash; Strong negative correlation across all 59 districts</span>`;
+}
+
+// ── Scatter Plot (detail panel) ───────────────────────
+function renderScatterPlot(selectedD) {
+  if (scatterChart) { scatterChart.destroy(); scatterChart = null; }
+  const canvas = document.getElementById('scatterChart');
+  if (!canvas) return;
+  scatterChart = buildScatterChart(canvas, selectedD);
+
+  const corr = pearsonCorrelation(
+    DISTRICTS.map(d => d.leadLevel),
+    DISTRICTS.map(d => d.schoolScore)
+  );
+  const el = document.getElementById('scatter-corr');
+  if (el) el.innerHTML = `<span class="corr-badge corr-neg">Pearson r = ${corr.toFixed(2)} &mdash; Strong negative correlation</span>`;
 }
 
 function buildScatterChart(canvasEl, selectedD) {
   const points = DISTRICTS.map(d => ({
     x: d.leadLevel,
     y: d.schoolScore,
-    districtId: d.id,
     label: d.name,
     isSelected: selectedD && d.id === selectedD.id,
   }));
 
-  const regular = points.filter(p => !p.isSelected);
-  const selected = points.filter(p => p.isSelected);
+  const regular  = points.filter(p => !p.isSelected).map(p => ({ x: p.x, y: p.y }));
+  const selected = points.filter(p => p.isSelected).map(p => ({ x: p.x, y: p.y }));
 
   return new Chart(canvasEl.getContext('2d'), {
     type: 'scatter',
     data: {
       datasets: [
         {
-          label: 'Districts',
-          data: regular.map(p => ({ x: p.x, y: p.y })),
-          backgroundColor: 'rgba(79, 195, 247, 0.35)',
-          borderColor: 'rgba(79, 195, 247, 0.6)',
+          label: 'All districts',
+          data: regular,
+          backgroundColor: 'rgba(91, 200, 245, 0.3)',
+          borderColor: 'rgba(91, 200, 245, 0.5)',
           pointRadius: 4,
           pointHoverRadius: 6,
         },
         {
           label: selectedD ? selectedD.name : '',
-          data: selected.map(p => ({ x: p.x, y: p.y })),
-          backgroundColor: '#ff5252',
-          borderColor: '#ff5252',
-          pointRadius: 7,
-          pointHoverRadius: 9,
+          data: selected,
+          backgroundColor: '#f5a623',
+          borderColor: '#f5a623',
+          pointRadius: 6,
+          pointHoverRadius: 8,
         }
       ]
     },
@@ -316,23 +293,23 @@ function buildScatterChart(canvasEl, selectedD) {
           callbacks: {
             label: ctx => {
               const p = points.find(pt => Math.abs(pt.x - ctx.raw.x) < 0.01 && pt.y === ctx.raw.y);
-              return p ? `${p.label}: ${p.x} ppb, ${p.y}/100` : `${ctx.raw.x} ppb, ${ctx.raw.y}`;
+              return p ? `${p.label}: ${p.x} ppb — Score ${p.y}` : `${ctx.raw.x} ppb`;
             }
           }
         }
       },
       scales: {
         x: {
-          title: { display: true, text: 'Lead Level (ppb)', color: '#8890aa', font: { size: 10 } },
-          ticks: { color: '#8890aa', font: { size: 9 } },
-          grid: { color: '#2c3150' },
-          border: { color: '#2c3150' },
+          title: { display: true, text: 'Lead Concentration (ppb)', color: '#606880', font: { size: 10 } },
+          ticks: { color: '#606880', font: { size: 9 } },
+          grid: { color: '#1c1f30' },
+          border: { color: '#1c1f30' },
         },
         y: {
-          title: { display: true, text: 'School Score', color: '#8890aa', font: { size: 10 } },
-          ticks: { color: '#8890aa', font: { size: 9 } },
-          grid: { color: '#2c3150' },
-          border: { color: '#2c3150' },
+          title: { display: true, text: 'Educational Outcomes Index', color: '#606880', font: { size: 10 } },
+          ticks: { color: '#606880', font: { size: 9 } },
+          grid: { color: '#1c1f30' },
+          border: { color: '#1c1f30' },
         }
       }
     }
@@ -356,6 +333,7 @@ function pearsonCorrelation(xs, ys) {
 function renderLegend() {
   const m = METRICS[activeLayer];
   document.getElementById('legend-title').textContent = m.label;
+  document.getElementById('legend-subtitle').textContent = m.legendSub || '';
 
   const scale = document.getElementById('legend-scale');
   scale.innerHTML = '';
@@ -388,7 +366,6 @@ function initControls() {
       document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Re-render map colors
       if (geoLayer) {
         geoLayer.eachLayer(l => {
           const d = getDistrictById(l.feature.properties.districtId);
@@ -396,36 +373,26 @@ function initControls() {
           const isSelected = selectedDistrict && selectedDistrict.id === d.id;
           l.setStyle({
             fillColor: getMetricColor(activeLayer, d[activeLayer]),
-            fillOpacity: isSelected ? 0.90 : 0.70,
-            color: isSelected ? '#ffffff' : 'rgba(255,255,255,0.15)',
-            weight: isSelected ? 2.5 : 0.8,
+            fillOpacity: isSelected ? 0.88 : 0.68,
+            color: isSelected ? '#e8ecf4' : 'rgba(255,255,255,0.12)',
+            weight: isSelected ? 2 : 0.7,
           });
+          // Refresh tooltip
+          const m = METRICS[activeLayer];
+          l.setTooltipContent(
+            `<strong>${d.name}</strong><br><span style="color:#9aa3bc">${d.neighborhood}</span><br>${m.label}: <strong>${m.format(d[activeLayer])}</strong>`
+          );
         });
       }
 
       renderLegend();
-
-      // Update tooltip (re-bind tooltips after layer change)
-      if (geoLayer) {
-        geoLayer.eachLayer(l => {
-          const d = getDistrictById(l.feature.properties.districtId);
-          if (!d) return;
-          l.setTooltipContent(() => {
-            const m = METRICS[activeLayer];
-            return `<strong>${d.name}</strong><br>${d.neighborhood}<br>
-              ${m.icon} ${m.label}: <strong>${m.format(d[activeLayer])}</strong>`;
-          });
-        });
-      }
     });
   });
 
-  // Sidebar toggle (mobile)
   const toggleBtn = document.getElementById('sidebar-toggle');
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('open');
+      document.getElementById('sidebar').classList.toggle('open');
     });
   }
 }
@@ -433,12 +400,7 @@ function initControls() {
 // ── About Modal ──────────────────────────────────────
 function initAboutModal() {
   const overlay = document.getElementById('about-overlay');
-  const openBtn = document.getElementById('about-btn');
-  const closeBtn = document.getElementById('about-close');
-
-  openBtn.addEventListener('click', () => overlay.classList.add('open'));
-  closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) overlay.classList.remove('open');
-  });
+  document.getElementById('about-btn').addEventListener('click', () => overlay.classList.add('open'));
+  document.getElementById('about-close').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
 }
